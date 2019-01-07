@@ -52,7 +52,7 @@ import butterknife.OnClick;
  * wcs调用接口来实现小车的控制。
  * 现在包含大部分查询的接口，陆续会实现所有涉及的接口
  *
- * 源汇版本 更名为：其他
+ * 美的版本 更名为：其他
  * 添加了rcs的清除充电桩故障功能并去掉了部分wcs的接口项
  *
  */
@@ -319,9 +319,8 @@ public class WcsCarOperateFragment extends BaseFragment{
     ,R.id.btn_releasePodStatus, R.id.btn_updateAddrState, R.id.btn_robot2Charge, R.id.btn_autoDrivePod
             , R.id.btn_driveRobotCarryPod, R.id.iv_fragment_back, R.id.btn_driveRobot
     ,R.id.btn_clearChargeError, R.id.btn_updatePodOnMap, R.id.btn_carUp, R.id.btn_carDown
-    , R.id.btn_carLeft, R.id.btn_carRight})
+    , R.id.btn_carLeft, R.id.btn_carRight, R.id.btn_clear_agv_path})
     public void doClick(View view){
-
         switch (view.getId()){
             case R.id.iv_fragment_back:// 返回上一界面
                 getActivity().getSupportFragmentManager().popBackStack();
@@ -1082,6 +1081,60 @@ public class WcsCarOperateFragment extends BaseFragment{
                         }else {
                             ToastUtil.showToast(getContext(), "请输入小车 id");
                         }
+
+                    }
+                });
+
+                break;
+
+            case R.id.btn_clear_agv_path:// 清除小车所有路径
+
+                setDialogView("清除小车所有路径");
+
+                final EditText et_carId_clear = viewOperate.findViewById(R.id.et_carIdInput);// 小车ID
+                et_carId_clear.setVisibility(View.VISIBLE);
+
+                viewOperate.findViewById(R.id.btn_send).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        final String agvId = et_carId_clear.getText().toString().trim();
+                        if (TextUtils.isEmpty(agvId)){
+                            ToastUtil.showToast(getContext(), "请输入小车 ID");
+                            return;
+                        }
+
+                        setUpConnectionFactory();// MQ连接设置
+                        // 给RabbitMQ发送消息清除小车路径
+                        publishToAMPQ(Constants.EXCHANGE, Constants.MQ_ROUTINGKEY_CLEAR_PATH);
+                        new AlertDialog.Builder(getContext())
+                                .setIcon(R.mipmap.app_icon)
+                                .setTitle("提示")
+                                .setMessage("确定清除小车路径？")
+                                .setPositiveButton("否", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                        interruptThread(publishThread);
+                                    }
+                                })
+                                .setNegativeButton("是", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        try {
+                                            Map<String, Object> message = new HashMap<>();
+                                            message.put("robotID", Long.parseLong(agvId));
+                                            queue.putLast(message);// 发送消息到MQ
+                                            ToastUtil.showToast(getContext(),"清除小车路径指令已发布");
+                                            dialog.dismiss();// 取消输入界面
+//                                            getActivity().getSupportFragmentManager().popBackStack();
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                        dialog.dismiss();
+
+                                    }
+                                }).create().show();
 
                     }
                 });

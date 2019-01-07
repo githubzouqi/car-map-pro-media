@@ -707,6 +707,9 @@ public class BoxView extends View{
             }
         }
 
+
+        // 美的版本，将工作站标识这部分给注释了
+        /*
         // 标识工作站位置
         try {
 
@@ -761,6 +764,7 @@ public class BoxView extends View{
             e.printStackTrace();
             ToastUtil.showToast(getContext(), "工作站标识异常");
         }
+        */
 
         // 标识开启了不间断释放pod功能的工作站区域
         try {

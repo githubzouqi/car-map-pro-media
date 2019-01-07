@@ -274,6 +274,18 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
+                <Button
+                    android:visibility="visible"
+                    android:layout_marginTop="2dp"
+                    android:gravity="center"
+                    android:id="@+id/btn_clear_agv_path"
+                    android:textColor="@color/colorAccent"
+                    android:foreground="@drawable/water_ripple_foreground"
+                    android:background="@drawable/button_shape_white"
+                    android:text="清除小车所有路径"
+                    android:textSize="16sp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
 
             </LinearLayout>
 

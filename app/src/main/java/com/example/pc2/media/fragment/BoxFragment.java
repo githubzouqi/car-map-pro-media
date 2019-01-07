@@ -29,6 +29,7 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -261,7 +262,7 @@ public class BoxFragment extends BaseFragment {
     private boolean bl_isDriveEmpty = false;// 默认空车路径未生成
 
     private View view_options = null;// 点击主页面地图上的格子，弹出的对话框的view
-    private TextView tv_options_lock_circle, tv_options_unlock_circle;
+    private TextView tv_options_lock_circle, tv_options_unlock_circle, tv_options_lock_point, tv_options_unlock_point;
     private AlertDialog dialog_options = null;// 点击主页面地图上的格子，弹出的对话框
     private List<Integer> nine_lock_unlock = new ArrayList<>();// 九宫格的地址点位集合
 
@@ -1265,11 +1266,95 @@ public class BoxFragment extends BaseFragment {
                         // 获取控件
                         tv_options_lock_circle = view_options.findViewById(R.id.tv_options_lock_circle);// 锁周边
                         tv_options_unlock_circle = view_options.findViewById(R.id.tv_options_unlock_circle);// 解锁周边
+                        tv_options_unlock_point = view_options.findViewById(R.id.tv_options_unlock_point);// 解锁当前点
+                        tv_options_lock_point = view_options.findViewById(R.id.tv_options_lock_point);// 锁格当前点
 
                         // 设置dialog所在的窗口的背景为透明，很关键
                         dialog_options.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                         dialog_options.setCancelable(true);
                         dialog_options.show();
+
+                        // 解锁当前点（单点安全区域解除）
+                        tv_options_unlock_point.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                setUpConnectionFactory();
+                                // 给RabbitMQ发送消息
+                                publishToAMPQ(Constants.EXCHANGE, Constants.MQ_ROUTINGKEY_LOCK_UNLOCK);
+                                ProgressBarUtil.showProgressBar(getContext(), "单点安全区域解除...",
+                                        getResources().getColor(R.color.colorPrimaryDark));
+                                int index = -1;
+                                if (manualLockList.size() != 0){
+                                    for (int i = 0;i < manualLockList.size();i++){
+                                        int point = manualLockList.get(i);
+                                        if (point == boxNo){
+                                            index = i;
+                                        }
+                                    }
+
+                                    if (index != -1){
+                                        manualLockList.remove(index);
+                                    }
+                                }
+
+                                nine_lock_unlock.clear();
+                                nine_lock_unlock.add(boxNo);
+
+                                Map<String, Object> message = new HashMap<>();
+                                message.put("availableAddressList", nine_lock_unlock);
+                                try{
+                                    queue.putLast(message);// 发送消息到MQ
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                    ToastUtil.showToast(getContext(), "单点安全区域解除异常：" + e.getMessage());
+                                }
+
+                                dialog_options.dismiss();
+                                ProgressBarUtil.dissmissProgressBar();
+                            }
+                        });
+
+                        // 锁格当前点（单点安全区域建立）
+                        tv_options_lock_point.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+
+                                setUpConnectionFactory();
+                                // 给RabbitMQ发送消息
+                                publishToAMPQ(Constants.EXCHANGE, Constants.MQ_ROUTINGKEY_LOCK_UNLOCK);
+                                ProgressBarUtil.showProgressBar(getContext(), "单点安全区域建立...",
+                                        getResources().getColor(R.color.colorPrimaryDark));
+                                boolean isExist = false;// false表示未添加
+                                if (manualLockList.size() == 0){
+                                    manualLockList.add(boxNo);
+                                }else {
+                                    for (int i = 0;i < manualLockList.size();i++){
+                                        int point = manualLockList.get(i);
+                                        if (point == boxNo){
+                                            isExist = true;
+                                        }
+                                    }
+
+                                    if (!isExist){
+                                        manualLockList.add(boxNo);
+                                    }
+                                }
+
+                                nine_lock_unlock.clear();
+                                nine_lock_unlock.add(boxNo);
+                                Map<String, Object> message = new HashMap<>();
+                                message.put("unAvailableAddressList", nine_lock_unlock);
+                                try{
+                                    queue.putLast(message);// 发送消息到MQ
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                    ToastUtil.showToast(getContext(), "单点安全区域建立异常：" + e.getMessage());
+                                }
+
+                                dialog_options.dismiss();
+                                ProgressBarUtil.dissmissProgressBar();
+                            }
+                        });
 
                         // 锁周边，即建立安全区域
                         tv_options_lock_circle.setOnClickListener(new View.OnClickListener() {
@@ -1539,7 +1624,7 @@ public class BoxFragment extends BaseFragment {
                 }
             }
 
-            LogUtil.e("manualLockList","lock:"+manualLockList.toString());
+            LogUtil.e("manualLockList","lock:" + manualLockList.toString());
 
 
             Map<String, Object> message = new HashMap<>();
