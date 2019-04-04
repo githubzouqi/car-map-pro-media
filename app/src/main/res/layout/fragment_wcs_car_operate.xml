@@ -48,7 +48,7 @@
                     android:layout_height="wrap_content" />
 
                 <Button
-                    android:visibility="gone"
+                    android:visibility="visible"
                     android:layout_marginTop="2dp"
                     android:gravity="center"
                     android:id="@+id/tv_checkAddrStatus"
@@ -61,7 +61,7 @@
                     android:layout_height="wrap_content" />
 
                 <Button
-                    android:visibility="visible"
+                    android:visibility="gone"
                     android:layout_marginTop="2dp"
                     android:gravity="center"
                     android:id="@+id/tv_resendOrder"
@@ -69,6 +69,19 @@
                     android:foreground="@drawable/water_ripple_foreground"
                     android:background="@drawable/button_shape_white"
                     android:text="@string/wcs_resend_order"
+                    android:textSize="16sp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <Button
+                    android:visibility="visible"
+                    android:layout_marginTop="2dp"
+                    android:gravity="center"
+                    android:id="@+id/tv_updateAGVAvailable"
+                    android:textColor="@color/colorAccent"
+                    android:foreground="@drawable/water_ripple_foreground"
+                    android:background="@drawable/button_shape_white"
+                    android:text="更新小车可用"
                     android:textSize="16sp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />

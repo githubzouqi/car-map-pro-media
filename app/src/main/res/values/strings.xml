@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">美的地图</string>
+    <string name="app_name">美的地图（MQ212）</string>
 
     <string name="splash_slogan">美的地图\n智能监控</string>
 
@@ -107,6 +107,7 @@
     <string name="url_checkPodStatus">/wcs/checkPodStatus?</string><!-- 查看pod信息-->
     <string name="url_checkAddrStatus">/wcs/checkAddrState?</string><!-- 查看地址状态-->
     <string name="url_resendOrder">/wcs/resendOrder?</string><!-- 重发任务-->
+    <string name="url_updateAGVAvailable">/wcs/updateRobotStatus?</string><!-- 更新小车可用-->
     <string name="url_robotOffline">/wcs/robotOffline?</string><!-- 下线某小车-->
     <string name="url_drivePod">/wcs/drivePod?</string><!-- 驱动pod去某地-->
     <string name="url_driveRobot">/wcs/driveRobot?</string><!-- 驱动小车去某地-->

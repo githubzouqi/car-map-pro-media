@@ -37,7 +37,7 @@ public class Constants {
     // RabbitMQ连接所需信息
 //    public static String MQ_HOST = "52.83.227.228";// MQ主机地址 源汇版
 //    public static String MQ_HOST = "192.168.0.72";// 主机地址：费舍尔版
-    public static String MQ_HOST = "192.168.10.212";// 主机地址：美的版
+    public static String MQ_HOST = "192.168.10.211";// 主机地址：美的版
     public static int MQ_PORT = 5672;// MQ端口号：源汇版、费舍尔版、美的版
 //    public static String MQ_USERNAME = "nt_yuan_hui";// MQ用户名 源汇版
     public static String MQ_USERNAME = "mushiny";// 用户名：费舍尔版、美的版

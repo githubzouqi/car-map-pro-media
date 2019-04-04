@@ -319,7 +319,7 @@ public class WcsCarOperateFragment extends BaseFragment{
     ,R.id.btn_releasePodStatus, R.id.btn_updateAddrState, R.id.btn_robot2Charge, R.id.btn_autoDrivePod
             , R.id.btn_driveRobotCarryPod, R.id.iv_fragment_back, R.id.btn_driveRobot
     ,R.id.btn_clearChargeError, R.id.btn_updatePodOnMap, R.id.btn_carUp, R.id.btn_carDown
-    , R.id.btn_carLeft, R.id.btn_carRight, R.id.btn_clear_agv_path})
+    , R.id.btn_carLeft, R.id.btn_carRight, R.id.btn_clear_agv_path, R.id.tv_updateAGVAvailable})
     public void doClick(View view){
         switch (view.getId()){
             case R.id.iv_fragment_back:// 返回上一界面
@@ -422,6 +422,44 @@ public class WcsCarOperateFragment extends BaseFragment{
 
                         }else {
                             ToastUtil.showToast(getContext(), "请输入小车的id");
+                        }
+                    }
+                });
+
+                break;
+
+            case R.id.tv_updateAGVAvailable:// 更新小车可用
+
+                setDialogView("更新小车可用");
+
+                final EditText et_updateAGVAvailable = viewOperate.findViewById(R.id.et_carIdInput);
+                et_updateAGVAvailable.setVisibility(View.VISIBLE);
+
+                viewOperate.findViewById(R.id.btn_send).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final String robotId = et_updateAGVAvailable.getText().toString().trim();// 取小车id
+                        if (!TextUtils.isEmpty(robotId)){
+
+                            new AlertDialog.Builder(getContext())
+                                    .setMessage("确定更新小车 " + robotId + " 可用？")
+                                    .setPositiveButton("否", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                        }
+                                    })
+                                    .setNegativeButton("是", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            methodUpdateAGVAvailable(Integer.parseInt(robotId));
+                                            dialog.dismiss();
+                                        }
+                                    })
+                                    .create().show();
+
+                        }else {
+                            ToastUtil.showToast(getContext(), "请输入小车 id");
                         }
                     }
                 });
@@ -1145,6 +1183,47 @@ public class WcsCarOperateFragment extends BaseFragment{
     }
 
     /**
+     * 更新小车可用
+     * @param robotId 小车的 id
+     */
+    private void methodUpdateAGVAvailable(int robotId) {
+
+        showDialog("加载中......");
+        boolean available = true;
+        boolean cancelOrder = true;
+
+        String url = rootAddress + getResources().getString(R.string.url_updateAGVAvailable)
+                + "sectionId=" + sectionId + "&robotId=" + robotId + "&status=" + 1
+                + "&available" + available + "&cancelOrder=" + cancelOrder;
+
+        StringRequest request = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        dissMissDialog();
+                        dialog_operate.dismiss();
+                        if (response.contains("小车不在同一个section")){
+                            ToastUtil.showToast(getContext(), "小车不在同一个地图，请输入当前区域下小车 ID");
+                            return;
+                        }
+
+                        ToastUtil.showToast(getContext(), "已更新该小车可用");
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        dissMissDialog();
+                        dialog_operate.dismiss();
+                        ToastUtil.showToast(getContext(), "更新小车可用失败");
+                    }
+                });
+
+        requestQueue.add(request);
+
+    }
+
+    /**
      * 驱动小车去某地
      * @param robotId
      * @param addrCodeId
@@ -1651,7 +1730,7 @@ public class WcsCarOperateFragment extends BaseFragment{
     }
 
     /**
-     * 产看地址状态
+     * 查看地址状态
      * @param addr
      */
     private void methodCheckAddrStatus(final int addr) {
