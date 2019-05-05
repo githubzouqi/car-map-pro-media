@@ -33,6 +33,9 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -88,9 +91,14 @@ public class WcsCarOperateFragment extends BaseFragment{
             switch (msg.what){
                 case WHAT_CAR_STATUS:// 查看小车的状态
                     ToastUtil.showToast(getContext(),"信息获取成功");
-                    String objCarStatus = (String) msg.obj;
-                    int robotId1 = msg.arg1;
-                    alertDialogShowCarStatus(objCarStatus, robotId1);
+                    String strObj = (String) msg.obj;
+                    try {
+                        JSONObject objCarStatus = new JSONObject(strObj);
+                        int robotId1 = msg.arg1;
+                        alertDialogShowCarStatus(objCarStatus, robotId1);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case WHAT_POD_STATUS:// 查看pod信息
                     ToastUtil.showToast(getContext(),"信息获取成功");
@@ -192,13 +200,92 @@ public class WcsCarOperateFragment extends BaseFragment{
      * @param objCarStatus
      * @param robotId1
      */
-    private void alertDialogShowCarStatus(String objCarStatus, final int robotId1) {
+    private void alertDialogShowCarStatus(JSONObject objCarStatus, final int robotId1) {
 
         viewShowContent = getLayoutInflater().from(getContext()).inflate(R.layout.show_view_content, null);
 
         TextView tv_showContent = viewShowContent.findViewById(R.id.tv_showContent);
-        if (!TextUtils.isEmpty(objCarStatus)){
-            tv_showContent.setText(objCarStatus);
+
+        String strRobotStatus = "";
+        try {
+
+            JSONObject reInfo = objCarStatus.optJSONObject("reInfo");
+
+            JSONObject robotMessage = reInfo.optJSONObject("robotMessage");
+
+            int robotID = robotMessage.optInt("robotID");
+            strRobotStatus += "小车 id：" + robotID + "\n";
+
+            int addressCodeID = robotMessage.optInt("addressCodeID");
+            strRobotStatus += "小车所在位置：" + addressCodeID + "\n";
+
+            int podCodeID = robotMessage.optInt("podCodeID");
+            if (podCodeID == 0){
+                strRobotStatus += "小车所驮货架号： " + "\n";
+            }else {
+                strRobotStatus += "小车所驮货架号：" + podCodeID + "\n";
+            }
+
+            int robotStatus = reInfo.optInt("robotStatus");
+            strRobotStatus += "小车当前状态：" + robotStatus + "（1=空闲，2=执行任务中，3=充电中，21=离线）" + "\n";
+
+            if (!reInfo.isNull("orderType")){
+                String orderType = reInfo.optString("orderType").toLowerCase();
+                String typeDesc = "";
+                if (orderType.equals("emptyrun")){
+                    typeDesc = "（小车空跑任务）";
+                }
+                if (orderType.equals("podrun")){
+                    typeDesc = "（货架回存储位任务）";
+                }
+                if (orderType.equals("chargerdrive")){
+                    typeDesc = "（小车充电任务）";
+                }
+                if (orderType.equals("podscan")){
+                    typeDesc = "（货架扫描任务）";
+                }
+                if (orderType.equals("stowpod")){
+                    typeDesc = "（上架任务）";
+                }
+                if (orderType.equals("pickpod")){
+                    typeDesc = "（拣货任务）";
+                }
+                if (orderType.equals("obppod")){
+                    typeDesc = "（拣货问题处理）";
+                }
+                if (orderType.equals("ibppod")){
+                    typeDesc = "（上架问题处理）";
+                }
+                if (orderType.equals("icqapod")){
+                    typeDesc = "（盘点任务）";
+                }
+                if (orderType.equals("carraypod")){
+                    typeDesc = "（搬运货架任务）";
+                }
+
+                strRobotStatus += "任务类型：" + orderType + typeDesc + "\n";
+
+            }else {
+                strRobotStatus += "任务类型：" + " " + "\n";
+            }
+
+            if (!reInfo.isNull("orderPath")){
+
+                String orderPath = String.valueOf(reInfo.opt("orderPath"));
+                strRobotStatus += "任务路径：" + orderPath + "\n";
+
+            }else {
+                strRobotStatus += "任务路径：" + "" + "\n";
+            }
+
+
+        }catch (Exception e){
+            e.printStackTrace();
+            ToastUtil.showToast(getContext(), "小车状态信息数据解析异常：" + e.getMessage());
+        }
+
+        if (!TextUtils.isEmpty(strRobotStatus)){
+            tv_showContent.setText(strRobotStatus);
         }else {
             ToastUtil.showToast(getContext(), "小车信息为空，惊了！");
         }

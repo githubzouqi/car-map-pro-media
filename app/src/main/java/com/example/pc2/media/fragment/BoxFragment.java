@@ -3562,10 +3562,12 @@ public class BoxFragment extends BaseFragment {
                     connection_storageMap = factory.newConnection();
                     Channel channel = connection_storageMap.createChannel();
                     channel.basicQos(1);
-                    String queueName = System.currentTimeMillis() + "queueNameStorageMap";
+//                    String queueName = System.currentTimeMillis() + "queueNameStorageMap";
+                    String queueName = Constants.MQ_QUEUENAME_STORAGEMAP_RESPONSE;
                     channel.exchangeDeclare(Constants.MQ_EXCHANGE_STORAGEMAP, "direct", true);
-                    AMQP.Queue.DeclareOk q = channel.queueDeclare(queueName, true, false, true, null);
-                    channel.queueBind(q.getQueue(), Constants.MQ_EXCHANGE_STORAGEMAP, Constants.MQ_ROUTINGKEY_STORAGEMAP_RESPONSE);
+//                    AMQP.Queue.DeclareOk q = channel.queueDeclare(queueName, true, false, true, null);
+//                    channel.queueBind(q.getQueue(), Constants.MQ_EXCHANGE_STORAGEMAP, Constants.MQ_ROUTINGKEY_STORAGEMAP_RESPONSE);
+                    channel.queueBind(queueName, Constants.MQ_EXCHANGE_STORAGEMAP, Constants.MQ_ROUTINGKEY_STORAGEMAP_RESPONSE);
                     Consumer consumer = new DefaultConsumer(channel){
                         @Override
                         public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
@@ -3589,18 +3591,19 @@ public class BoxFragment extends BaseFragment {
 
                         }
                     };
-                    channel.basicConsume(q.getQueue(), true, consumer);
+//                    channel.basicConsume(q.getQueue(), true, consumer);
+                    channel.basicConsume(queueName, true, consumer);
                 }catch (Exception e){
                     ProgressBarUtil.dissmissProgressBar();
                     e.printStackTrace();
-                    ToastUtil.showToast(getContext(), "异常：" + e.getMessage());
+//                    ToastUtil.showToast(getContext(), "异常：" + e.getMessage());
                     try {
                         Thread.sleep(5000); //sleep and then try again
                     } catch (InterruptedException e1) {
                         ProgressBarUtil.dissmissProgressBar();
                         LogUtil.d("TAG_STORAGEAP_DATA","InterruptedException happened!");
                         e1.printStackTrace();
-                        ToastUtil.showToast(getContext(), "异常：InterruptedException happened!");
+//                        ToastUtil.showToast(getContext(), "异常：InterruptedException happened!");
                     }
                 }
             }

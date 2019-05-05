@@ -57,6 +57,7 @@ public class Constants {
     public static final String MQ_EXCHANGE_STORAGEMAP = "ANY_WAREHOUSE_INIT";// 交换机名称
     public static final String MQ_ROUTINGKEY_STORAGEMAP_REQUEST = "ANY_WCS_WAREHOUSE_INIT_REQUEST";// 发布消息所绑定的路由键
     public static final String MQ_ROUTINGKEY_STORAGEMAP_RESPONSE = "WCS_ANY_WAREHOUSE_INIT_RESPONSE";// 获取消息所绑定的路由键
+    public static final String MQ_QUEUENAME_STORAGEMAP_RESPONSE = "WCS_ANY_WAREHOUSE_INIT_RESPONSE";// 队列名
 
     public static final String MQ_ROUTINGKEY_CARPATH = "RCS_WCS_RESPONSE_ALL_AGV_INFO";// 获取小车锁格和尚未锁格的路径消息的路由键
 
