@@ -160,6 +160,32 @@
                     android:layout_height="wrap_content" />
 
                 <Button
+                    android:visibility="visible"
+                    android:layout_marginTop="2dp"
+                    android:gravity="center"
+                    android:id="@+id/btn_change_agv"
+                    android:textColor="@color/colorAccent"
+                    android:foreground="@drawable/water_ripple_foreground"
+                    android:background="@drawable/button_shape_white"
+                    android:text="换车操作"
+                    android:textSize="16sp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <Button
+                    android:visibility="visible"
+                    android:layout_marginTop="2dp"
+                    android:gravity="center"
+                    android:id="@+id/btn_cancelTask"
+                    android:textColor="@color/colorAccent"
+                    android:foreground="@drawable/water_ripple_foreground"
+                    android:background="@drawable/button_shape_white"
+                    android:text="取消任务"
+                    android:textSize="16sp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <Button
                     android:visibility="gone"
                     android:layout_marginTop="2dp"
                     android:gravity="center"

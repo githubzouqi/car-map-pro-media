@@ -18,16 +18,19 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.pc2.media.R;
 import com.example.pc2.media.constant.Constants;
 import com.example.pc2.media.utils.LogUtil;
+import com.example.pc2.media.utils.ProgressBarUtil;
 import com.example.pc2.media.utils.ToastUtil;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -406,7 +409,8 @@ public class WcsCarOperateFragment extends BaseFragment{
     ,R.id.btn_releasePodStatus, R.id.btn_updateAddrState, R.id.btn_robot2Charge, R.id.btn_autoDrivePod
             , R.id.btn_driveRobotCarryPod, R.id.iv_fragment_back, R.id.btn_driveRobot
     ,R.id.btn_clearChargeError, R.id.btn_updatePodOnMap, R.id.btn_carUp, R.id.btn_carDown
-    , R.id.btn_carLeft, R.id.btn_carRight, R.id.btn_clear_agv_path, R.id.tv_updateAGVAvailable})
+    , R.id.btn_carLeft, R.id.btn_carRight, R.id.btn_clear_agv_path, R.id.tv_updateAGVAvailable
+    , R.id.btn_change_agv, R.id.btn_cancelTask})
     public void doClick(View view){
         switch (view.getId()){
             case R.id.iv_fragment_back:// 返回上一界面
@@ -1265,7 +1269,177 @@ public class WcsCarOperateFragment extends BaseFragment{
                 });
 
                 break;
+            case R.id.btn_change_agv:// 换车操作
+
+                setDialogView("换车操作");
+                final EditText et_change_agv_podId = viewOperate.findViewById(R.id.et_podIdInput);// 货架id
+                et_change_agv_podId.setVisibility(View.VISIBLE);
+
+                viewOperate.findViewById(R.id.btn_send).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        final String podIndex = et_change_agv_podId.getText().toString().trim();
+                        if (!TextUtils.isEmpty(podIndex)){
+                            new AlertDialog.Builder(getContext())
+                                    .setIcon(R.mipmap.app_icon)
+                                    .setTitle("提示")
+                                    .setMessage("执行[ 换车操作 ]操作前，请确认已经执行如下操作：[ 释放pod状态 ]、[ 更新地址状态 ]、[ 更新小车可用 ]？")
+                                    .setPositiveButton("否", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                        }
+                                    })
+                                    .setNegativeButton("是", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                            method2ChangeAGV(podIndex);
+
+                                        }
+                                    }).create().show();
+                        }else {
+                            ToastUtil.showToast(getContext(), "请输入货架号码");
+                        }
+
+                    }
+                });
+
+                break;
+
+            case R.id.btn_cancelTask:// 取消任务
+
+                setDialogView("取消任务");
+                final EditText et_cancelTask_agvId = viewOperate.findViewById(R.id.et_carIdInput);// 小车ID
+                et_cancelTask_agvId.setVisibility(View.VISIBLE);
+
+                viewOperate.findViewById(R.id.btn_send).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        final String driveId = et_cancelTask_agvId.getText().toString().trim();
+                        if (!TextUtils.isEmpty(driveId)){
+                            new AlertDialog.Builder(getContext())
+                                    .setIcon(R.mipmap.app_icon)
+                                    .setTitle("提示")
+                                    .setMessage("执行[ 取消任务 ]操作前，请确认已经执行如下操作：[ 释放pod状态 ]、[ 更新地址状态 ]、[ 更新小车可用 ]？")
+                                    .setPositiveButton("否", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                        }
+                                    })
+                                    .setNegativeButton("是", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                            method2CancelTask(driveId);
+
+                                        }
+                                    }).create().show();
+                        }else {
+                            ToastUtil.showToast(getContext(), "请输入小车 ID");
+                        }
+
+                    }
+                });
+
+                break;
         }
+
+    }
+
+    /**
+     * 取消任务（根据输入小车的id实现）
+     * @param driveId
+     */
+    private void method2CancelTask(String driveId) {
+
+        ProgressBarUtil.showProgressBar(getContext(), "");
+        String url = rootAddress + getResources().getString(R.string.url_cancel_task)
+                + "driveId=" + driveId;
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        ProgressBarUtil.dissmissProgressBar();
+                        dialog_operate.dismiss();
+                        try {
+                            String code = response.optString("code");
+                            String msg = response.optString("msg");
+
+                            if ("0".equals(code)){
+                                ToastUtil.showToast(getContext(), msg);
+                            }
+                            if ("1".equals(code)){
+                                ToastUtil.showToast(getContext(), msg);
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            ToastUtil.showToast(getContext(), "取消任务返回数据解析异常：" + e.getMessage());
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                ProgressBarUtil.dissmissProgressBar();
+                dialog_operate.dismiss();
+                error.printStackTrace();
+                ToastUtil.showToast(getContext(), "取消任务失败：" + error.getMessage());
+            }
+        });
+
+        requestQueue.add(request);
+
+    }
+
+    /**
+     * 换车操作（根据输入的货架号码实现）
+     * @param podIndex
+     */
+    private void method2ChangeAGV(String podIndex) {
+
+        ProgressBarUtil.showProgressBar(getContext(),"");
+        String url = rootAddress + getResources().getString(R.string.url_change_agv) +
+                "podIndex=" + podIndex;
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        ProgressBarUtil.dissmissProgressBar();
+                        dialog_operate.dismiss();
+                        try {
+                            String code = response.optString("code");
+                            String msg = response.optString("msg");
+
+                            if ("0".equals(code)){
+                                ToastUtil.showToast(getContext(), msg);
+                            }
+                            if ("1".equals(code)){
+                                ToastUtil.showToast(getContext(), msg);
+                            }
+                            if("2".equals(code)){
+                                ToastUtil.showToast(getContext(), msg);
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            ToastUtil.showToast(getContext(), "换车返回数据解析异常：" + e.getMessage());
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                ProgressBarUtil.dissmissProgressBar();
+                dialog_operate.dismiss();
+                error.printStackTrace();
+                ToastUtil.showToast(getContext(), "换车失败：" + error.getMessage());
+            }
+        });
+
+        requestQueue.add(request);
 
     }
 
