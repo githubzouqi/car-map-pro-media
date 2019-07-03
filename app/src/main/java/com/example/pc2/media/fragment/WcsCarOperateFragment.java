@@ -18,8 +18,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -1354,11 +1354,12 @@ public class WcsCarOperateFragment extends BaseFragment{
      * 取消任务（根据输入小车的id实现）
      * @param driveId
      */
-    private void method2CancelTask(String driveId) {
+    private void method2CancelTask(final String driveId) {
 
         ProgressBarUtil.showProgressBar(getContext(), "");
-        String url = rootAddress + getResources().getString(R.string.url_cancel_task)
+        String url = getResources().getString(R.string.url_cancel_task)
                 + "driveId=" + driveId;
+
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url,
                 new Response.Listener<JSONObject>() {
@@ -1399,11 +1400,11 @@ public class WcsCarOperateFragment extends BaseFragment{
      * 换车操作（根据输入的货架号码实现）
      * @param podIndex
      */
-    private void method2ChangeAGV(String podIndex) {
+    private void method2ChangeAGV(final String podIndex) {
 
         ProgressBarUtil.showProgressBar(getContext(),"");
-        String url = rootAddress + getResources().getString(R.string.url_change_agv) +
-                "podIndex=" + podIndex;
+        String url = getResources().getString(R.string.url_change_agv)
+                + "podIndex=" + podIndex;
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url,
                 new Response.Listener<JSONObject>() {
